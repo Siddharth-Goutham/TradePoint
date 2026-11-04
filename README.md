@@ -125,6 +125,11 @@ python scraper/daily_news_scraper.py
 
 **Issue 9: [AI] End-to-End Orchestration & Handoff Testing**
 *Assignee: Siddharth Goutham*
+*   [ ] Connect LLM sentiment output to update the `sentiment_score` column in the database.
+*   [ ] Wire the final output of the LangGraph `Execution Agent` directly into the GTT execution function.
+*   [ ] Run a full simulated loop: News Scraped -> Sentiment Scored -> Probability Calculated -> GTT Order Generated.
+
+
 
 <FollowUp label="Write the Flask Application Factory" query="Let's start with Issue 1 and write the Flask application factory and SQLAlchemy models."/>
 
