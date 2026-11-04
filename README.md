@@ -1,130 +1,606 @@
-# TradePoint
-**Context-Aware Trading Assistant**  
-*A unified, agent-driven financial platform that automates a retail trader's daily research, sentiment analysis, and live market execution.*
+# 📈 TradePoint -- Context-Aware Trading Assistant
 
-## Why TradePoint
-Retail traders face immense friction when managing isolated tools for market news, quantitative analysis, and trade execution. Quant-Sent bridges this gap by providing an end-to-end, automated trading intelligence platform. By integrating the PayPal REST API, this infrastructure is monetized as a seamless SaaS product, allowing traders to subscribe to premium multi-agent financial analytics and automated execution without leaving the ecosystem.
+**TradePoint** is a modular, agent-driven financial platform that
+automates a retail trader's daily research and execution. It scrapes
+unstructured market news, applies LLM sentiment analysis, merges it with
+historical NSE price action via an ML pipeline, and automatically
+executes Good Till Triggered (GTT) orders via the Zerodha Kite API.
 
-## Features and status
-*   **Market Data Ingestion:** Decoupled headless Selenium script bypassing JS blocks to scrape unstructured daily financial news.
-*   **Database Integration:** Scraped headlines, links, and metadata are inserted directly into a shared SQLite/PostgreSQL database via SQLAlchemy.
-*   **AI Orchestration:** LangGraph stateful multi-agent workflow orchestrating Scraper, Quant, Risk Management, and Execution agents.
-*   **Quantitative ML Pipeline:** Scikit-Learn and XGBoost models predict price movement probabilities by merging historical NSE telemetry with LLM sentiment scores.
-*   **Automated Execution:** Daily OAuth login flow captures the Zerodha Kite API access token to automatically place Good Till Triggered (GTT) orders.
-*   **SaaS Monetization:** PayPal REST API integration captures subscriptions, while a Gmail SMTP script delivers daily HTML email digests.
+The project explores the PayPal Hackathon challenge by integrating the
+PayPal REST API to monetize this infrastructure as a seamless SaaS
+product.
 
-## Architecture
-The pipeline relies on a clean data handoff:
-1.  **Data Extraction:** The Selenium scraper runs independently of the Flask app, dumping daily news into the `News` database table.
-2.  **AI & Quant Processing:** LangGraph agents pull the news, generate LLM sentiment scores, and feed the data alongside NSE telemetry into the XGBoost pipeline.
-3.  **Market Ops:** The Flask backend manages the Zerodha Kite OAuth flow. The Execution agent uses the quantitative output to place GTT orders via the Kite API.
-4.  **UI & Delivery:** The frontend Jinja templates query the database to render the "News Column" and user dashboard, while the SMTP engine sends daily digests.
+> **Note:** This is an open-source development project built for
+> demonstration purposes. It does not provide official financial advice,
+> guarantee profits, or claim production readiness for real-money
+> trading.
 
-## Technology and design
-*   **Backend:** Python 3.11+, Flask, SQLAlchemy, SQLite/PostgreSQL.
-*   **Market Operations:** Zerodha Kite Connect API.
-*   **Data Pipeline:** Selenium (headless).
-*   **Machine Learning:** Scikit-Learn, XGBoost, LangGraph, OpenAI-compatible LLMs.
-*   **Frontend:** HTML5, CSS3, Jinja2, Bootstrap.
-*   **Payments:** PayPal REST API.
+**GitHub Repository:**
+[TradePoint](https://github.com/Siddharth-Goutham/TradePoint)
 
-## Install and configure
-**1. Clone the repository**
-git clone https://github.com/your-username/tradepoint.git
-cd tradepoint
+------------------------------------------------------------------------
 
-**2. Set up a virtual environment**
+## 📑 Table of Contents
+
+-   [Why TradePoint?](#-why-tradepoint)
+-   [Features and Status](#-features-and-status)
+-   [Architecture](#-architecture)
+-   [Technology Stack](#-technology-stack)
+-   [Repository Structure](#-repository-structure)
+-   [Installation and Configuration](#-installation-and-configuration)
+-   [Quickstart](#-quickstart)
+-   [Dashboard and Deployment](#-dashboard-and-deployment)
+-   [Trust, Verification, and
+    Limitations](#-trust-verification-and-limitations)
+-   [ML Pipeline Evaluation](#-ml-pipeline-evaluation)
+-   [Data Privacy and Responsible
+    Use](#-data-privacy-and-responsible-use)
+-   [Current Constraints and Roadmap](#-current-constraints-and-roadmap)
+-   [GitHub Issues Roadmap](#-github-issues-roadmap)
+-   [Open Source and Community](#-open-source-and-community)
+
+------------------------------------------------------------------------
+
+## 🎯 Why TradePoint?
+
+Retail traders face immense friction when managing isolated tools for
+market news, quantitative analysis, and trade execution.
+
+Reviewers and traders also need to assess whether market sentiment
+supports a specific trade direction without being blinded by noise.
+
+TradePoint provides repeatable preprocessing, AI-powered sentiment
+scoring, and evidence-based probability checks to help traders automate
+their daily workflows.
+
+The pipeline automates:
+
+-   Headless financial news extraction.
+-   LLM-based sentiment scoring.
+-   Machine learning probability generation.
+-   Conditional broker execution.
+
+Engineers and traders still need to configure strict risk parameters and
+capital limits.
+
+A generated trade signal is a statistical triage signal, not a guarantee
+of profitable trading.
+
+The open-source goal is to make the data contracts, ML features, and
+LangGraph multi-agent orchestration inspectable and reusable.
+
+------------------------------------------------------------------------
+
+## 🚀 Features and Status
+
+  -----------------------------------------------------------------------
+  Area                                Features
+  ----------------------------------- -----------------------------------
+  Data Extraction                     Headless Selenium scraper for
+                                      extracting financial news and
+                                      storing it in a shared SQL
+                                      database.
+
+  Orchestration                       Stateful LangGraph multi-agent
+                                      workflow containing Scraper, Quant,
+                                      Risk, and Execution agents.
+
+  Sentiment Analysis                  Configurable LLM client for
+                                      classifying market news into
+                                      bullish, bearish, and neutral
+                                      sentiment scores.
+
+  Predictive ML                       Scikit-Learn and XGBoost pipeline
+                                      combining historical NSE data with
+                                      LLM sentiment scores.
+
+  Market Operations                   Flask routes handling Zerodha Kite
+                                      Connect OAuth and generating GTT
+                                      orders.
+
+  Monetization                        PayPal REST API integration using
+                                      Smart Buttons for SaaS
+                                      subscriptions.
+
+  Reports & UI                        Jinja/Bootstrap dashboard
+                                      displaying financial news,
+                                      sentiment scores, active trades,
+                                      and optional daily SMTP email
+                                      digests.
+  -----------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
+## 🏗️ Architecture
+
+TradePoint follows a decoupled architecture with two primary processes:
+
+1.  **Flask Backend:** Handles the user interface, APIs, authentication,
+    and market operations.
+2.  **AI Pipeline:** Handles news scraping, multi-agent orchestration,
+    sentiment analysis, and ML predictions.
+
+The database acts as the shared handoff layer between the scraper and
+the Flask dashboard.
+
+### Key Design Decisions
+
+**1. Decoupled Scraping**
+
+The Selenium scraper runs independently of the Flask application. This
+ensures data ingestion can continue even if the daily Zerodha API token
+expires.
+
+**2. Database Handoff**
+
+Extracted financial news is stored directly in a shared database table.
+The Flask dashboard queries this table to display the in-app news
+column.
+
+**3. Multi-Agent State Management**
+
+LangGraph maintains a structured state dictionary. The Execution Agent
+cannot proceed unless the Risk Agent validates the `trade_approved`
+boolean based on user-defined parameters.
+
+**4. Subscription Management**
+
+Core AI agent routes in Flask check for a valid `is_subscribed` flag
+managed through PayPal webhooks.
+
+------------------------------------------------------------------------
+
+## 🛠️ Technology Stack
+
+  Technology                 Purpose
+  -------------------------- --------------------------------------
+  Python 3.9+                Core programming language
+  Flask                      Backend framework and API routes
+  LangGraph                  Multi-agent orchestration
+  Scikit-Learn               Machine learning pipeline
+  XGBoost                    Predictive modeling
+  Selenium                   Automated financial news scraping
+  SQLAlchemy                 Database ORM
+  SQLite / PostgreSQL        Database management
+  OpenAI Python SDK          LLM-based sentiment analysis
+  Zerodha Kite Connect API   Broker authentication and GTT orders
+  PayPal REST API            SaaS subscription management
+  Jinja2                     Server-side templating
+  Bootstrap                  Dashboard UI
+  SMTP                       Email digest delivery
+
+------------------------------------------------------------------------
+
+## 📂 Repository Structure
+
+``` text
+TradePoint/
+│
+├── app/                    # Flask application, UI templates, and API routes
+├── agents/                 # LangGraph nodes (Quant, Risk, Execution)
+├── core/                   # SQLAlchemy models and database schemas
+├── ml/                     # XGBoost pipelines and preprocessors
+├── scraper/                # Standalone Selenium headless news scraper
+├── tests/                  # Unit tests for APIs, agents, and data contracts
+├── .env.example            # Environment variable template
+├── requirements.txt        # Python dependencies
+└── README.md               # Project documentation
+```
+
+------------------------------------------------------------------------
+
+## ⚙️ Installation and Configuration
+
+The project baseline is Python 3.9+.
+
+### 1. Clone the Repository
+
+``` bash
+git clone https://github.com/Siddharth-Goutham/TradePoint.git
+cd TradePoint
+```
+
+### 2. Create a Virtual Environment
+
+**Linux / macOS**
+
+``` bash
 python3 -m venv .venv
-source .venv/bin/activate  # On Windows use: .\.venv\Scripts\activate
+source .venv/bin/activate
+```
 
-**3. Install dependencies**
+**Windows PowerShell**
+
+``` powershell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+### 3. Install Dependencies
+
+``` bash
+python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
+```
 
-**4. Configure Environment Variables**
-Create a `.env` file in the root directory:
-KITE_API_KEY=your_kite_api_key
-KITE_API_SECRET=your_kite_api_secret
-PAYPAL_CLIENT_ID=your_paypal_client_id
-PAYPAL_CLIENT_SECRET=your_paypal_secret
-FLASK_APP=app.py
-FLASK_ENV=development
-SECRET_KEY=your_flask_secret_key
+### 4. Configure Environment Variables
 
-## Quickstart
-**Initialize the Database:**
+Copy the example environment file.
+
+**Linux / macOS**
+
+``` bash
+cp .env.example .env
+```
+
+**Windows PowerShell**
+
+``` powershell
+copy .env.example .env
+```
+
+Configure the following variables in your `.env` file:
+
+  Variable             Description
+  -------------------- --------------------------------------
+  `KITE_API_KEY`       Zerodha developer application key
+  `KITE_API_SECRET`    Zerodha developer application secret
+  `LLM_API_KEY`        LLM provider API key
+  `PAYPAL_CLIENT_ID`   PayPal REST API client ID
+  `SMTP_EMAIL`         Gmail account for email digests
+  `SMTP_PASSWORD`      Gmail app-specific password
+  `FLASK_APP`          Flask application entry point
+
+> **Security:** The `.env` file is ignored by Git. Never commit API
+> keys, broker credentials, or production payment credentials.
+
+------------------------------------------------------------------------
+
+## ▶️ Quickstart
+
+After installation and environment configuration, initialize the
+database and start both application processes.
+
+### 1. Initialize the Database
+
+``` bash
 flask db upgrade
+```
 
-**Run the Application (Terminal 1):**
+### 2. Start the Flask Application
+
+Open the first terminal:
+
+``` bash
 flask run
+```
 
-**Run the decoupled Selenium news scraper (Terminal 2):**
+Visit `http://localhost:5000` to view the dashboard and trigger the
+Zerodha login flow.
+
+### 3. Start the AI Pipeline
+
+Open a second terminal:
+
+``` bash
 python scraper/daily_news_scraper.py
+```
 
-*The dashboard will be available at `http://localhost:5000`.*
+The scraper and AI pipeline run independently of the Flask application.
 
-## Team Members
-*   **Siddharth Goutham** – The AI & Quant Brain (LangGraph Orchestration, XGBoost, Prompt Engineering)
-*   **Shreetham Anand** – Full-Stack & Market Ops (Flask, Zerodha Kite API, Dashboard UI)
-*   **Shreeyansh Vats** – Data Pipeline & Public Web (Selenium Scraper, PayPal API Integration)
+------------------------------------------------------------------------
 
----
+## 📊 Dashboard and Deployment
 
-# GitHub Issues Roadmap
+The dashboard is built using server-side Jinja templates.
+
+It displays:
+
+-   Scraped financial news.
+-   AI-generated sentiment scores.
+-   Active trade signals.
+-   Relevant market information.
+
+The application is designed to be containerized using Docker and
+deployed on platforms such as:
+
+-   Render
+-   AWS EC2
+
+The repository currently defaults to local execution for hackathon
+demonstration purposes.
+
+To test the PayPal subscription flow locally, use PayPal Sandbox
+credentials in your `.env` file.
+
+------------------------------------------------------------------------
+
+## 🛡️ Trust, Verification, and Limitations
+
+### Deterministic Checks and Model Assistance
+
+-   Sentiment generation extracts bullish and bearish claims from
+    pre-scraped financial news.
+-   Validators do not establish that a cited article guarantees market
+    movement.
+-   ML probability scoring is model-assisted and heuristic.
+-   Missing scores or low-confidence predictions should default to
+    inaction.
+-   The Risk Agent enforces deterministic checks, such as whether a
+    trade exceeds 2% of total capital.
+-   A failed deterministic risk check prevents execution even if the
+    Quant Agent expresses high confidence.
+
+### Current Limitations
+
+1.  Headless scraping is sensitive to changes in target website DOM
+    structures.
+2.  Zerodha access tokens require a daily login flow through the
+    frontend.
+3.  Full autonomous operation across multiple days requires manual user
+    intervention every morning.
+4.  ML models trained on historical data may experience concept drift in
+    live markets.
+
+------------------------------------------------------------------------
+
+## 📈 ML Pipeline Evaluation
+
+The ML pipeline evaluates prediction accuracy against historical NSE
+datasets.
+
+Evaluation metrics include:
+
+-   Accuracy
+-   Precision
+-   Recall
+-   F1-score
+
+The final evaluation results will be documented in:
+
+``` text
+ml/evaluation_results.md
+```
+
+Evaluation details are pending final training passes.
+
+------------------------------------------------------------------------
+
+## 🔐 Data Privacy and Responsible Use
+
+-   Committed databases, if any, contain mock data.
+-   Real financial data may expose API keys, account balances, and
+    personal information.
+-   Collect only necessary data and obtain appropriate permissions.
+-   Never commit `.env` files containing live Kite API secrets or PayPal
+    production credentials.
+-   AI outputs may be incomplete, biased, or incorrect.
+-   Risk settings should be reviewed by a qualified person before
+    enabling automated GTT execution.
+
+> **Disclaimer:** This software is intended for educational and
+> hackathon purposes. The creators are not responsible for financial
+> losses incurred through deployment of this software in live markets.
+
+------------------------------------------------------------------------
+
+## 🗺️ Current Constraints and Roadmap
+
+### Implemented
+
+-   Validated data ingestion.
+-   Headless Selenium news scraping.
+-   Decoupled database handoff.
+-   Jinja dashboard UI.
+-   PayPal Sandbox integration.
+-   LangGraph agent scaffolding.
+-   Flask blueprint structure.
+
+### Tracked Separately
+
+-   Live cloud deployment.
+-   Finalizing XGBoost hyperparameter tuning.
+-   Advanced backtesting modules.
+
+------------------------------------------------------------------------
+
+# 🗺️ GitHub Issues Roadmap
+
+The following roadmap can be used to create and track GitHub Issues for
+the development team.
 
 ## Phase 1: Foundation & Data Plumbing
-**Issue 1: [Backend] Initialize Flask Boilerplate & Database Schema**
-*Assignee: Shreetham Anand*
-*   [ ] Set up the Flask application factory and configure SQLite/PostgreSQL.
-*   [ ] Create SQLAlchemy models: `User`, `News` (title, link, sentiment_score), and `Trade` (status, symbol, GTT parameters).
-*   [ ] Create the base `layout.html` and `dashboard.html` Jinja templates.
 
-**Issue 2: [Data] Build Headless Selenium News Scraper**
-*Assignee: Shreeyansh Vats*
-*   [ ] Write a decoupled Python script using Selenium (headless) to bypass JS on financial news sites.
-*   [ ] Extract headlines, summaries, and URLs.
-*   [ ] Wire the script to insert scraped data directly into the `News` table in the shared database.
+**Goal:** Get the database running, establish data flow, and configure
+the foundational environments.
 
-**Issue 3: [AI] Setup ML Environment & Initial LLM Prompts**
-*Assignee: Siddharth Goutham*
-*   [ ] Set up the Python environment for Scikit-Learn, XGBoost, and LangGraph.
-*   [ ] Draft system prompts for LLM Sentiment Analysis (extracting bullish/bearish signals).
-*   [ ] Write a script to fetch raw news from the `News` database table and append dummy sentiment scores for UI testing.
+### Issue 1: \[Backend\] Initialize Flask Boilerplate & Database Schema
+
+**Assignee:** Shreetham (Full-Stack & Market Ops)
+
+**Description:** Set up the core application structure and shared
+database.
+
+**Tasks:**
+
+-   [ ] Set up the Flask application factory.
+-   [ ] Configure SQLite/PostgreSQL.
+-   [ ] Create SQLAlchemy models: User, News (title, link,
+    sentiment_score), and Trade (status, symbol, GTT parameters).
+-   [ ] Create the base `layout.html` and `dashboard.html` Jinja
+    templates.
+
+### Issue 2: \[Data\] Build Headless Selenium News Scraper
+
+**Assignee:** Shreeyansh (Data Pipeline & Public Web)
+
+**Description:** Build the decoupled data ingestion pipeline.
+
+**Tasks:**
+
+-   [ ] Write a decoupled Python script using Selenium in headless mode.
+-   [ ] Extract headlines, summaries, and URLs.
+-   [ ] Connect the script to the shared database.
+-   [ ] Insert scraped data directly into the News table.
+
+### Issue 3: \[AI\] Setup ML Environment & Initial LLM Prompts
+
+**Assignee:** Siddharth (AI & Quant Brain)
+
+**Description:** Establish the machine learning environment and prompt
+engineering.
+
+**Tasks:**
+
+-   [ ] Set up Python dependencies for Scikit-Learn, XGBoost, and
+    LangGraph.
+-   [ ] Draft system prompts for LLM sentiment analysis.
+-   [ ] Extract bullish/bearish signals from raw news text.
+-   [ ] Write a script to fetch raw news from the database and append
+    dummy sentiment scores for UI testing.
+
+------------------------------------------------------------------------
 
 ## Phase 2: Core Engine & User Interface
-**Issue 4: [Backend] Implement Zerodha Kite Daily OAuth Flow**
-*Assignee: Shreetham Anand*
-*   [ ] Build the login route that redirects users to the Zerodha Kite login page.
-*   [ ] Handle the callback route to capture the `request_token`.
-*   [ ] Exchange the `request_token` for the daily `access_token` and store it securely.
-*   [ ] Build the "News Column" UI on the dashboard to fetch and render articles from the database.
 
-**Issue 5: [Web] Build Static Landing Page & Email Digest Template**
-*Assignee: Shreeyansh Vats*
-*   [ ] Build the public `index.html` landing page explaining "Quant-Sent".
-*   [ ] Design the pricing tier section (UI only, for PayPal integration later).
-*   [ ] Design the HTML/CSS template for the daily SMTP email digest (using Jinja formatting).
+**Goal:** Connect the frontend to the APIs, build the multi-agent
+workflow, and develop the public-facing pages.
 
-**Issue 6: [AI] Build LangGraph State Workflow & XGBoost Pipeline**
-*Assignee: Siddharth Goutham*
-*   [ ] Define the LangGraph `State` dictionary to hold market data, sentiment, and risk parameters.
-*   [ ] Create the nodes: `Quant Agent`, `Risk Agent`, and `Execution Agent`.
-*   [ ] Build the preliminary XGBoost pipeline to output a probability score.
+### Issue 4: \[Backend\] Implement Zerodha Kite Daily OAuth Flow
+
+**Assignee:** Shreetham (Full-Stack & Market Ops)
+
+**Description:** Handle broker authentication and dashboard data
+surfacing.
+
+**Tasks:**
+
+-   [ ] Build the login route that redirects users to Zerodha Kite.
+-   [ ] Handle the callback route to capture the `request_token`.
+-   [ ] Exchange the `request_token` for the daily `access_token`.
+-   [ ] Store the token securely in the user's session/database.
+-   [ ] Build the News Column UI on the dashboard.
+
+### Issue 5: \[Web\] Build Static Landing Page & Email Digest Template
+
+**Assignee:** Shreeyansh (Data Pipeline & Public Web)
+
+**Description:** Build public-facing marketing and email assets.
+
+**Tasks:**
+
+-   [ ] Build the public `index.html` landing page explaining
+    TradePoint.
+-   [ ] Design pricing tiers for PayPal integration.
+-   [ ] Design the HTML/CSS template for the daily SMTP email digest.
+-   [ ] Use Jinja formatting to inject dynamic data.
+
+### Issue 6: \[AI\] Build LangGraph State Workflow & XGBoost Pipeline
+
+**Assignee:** Siddharth (AI & Quant Brain)
+
+**Description:** Construct AI orchestration and predictive modeling.
+
+**Tasks:**
+
+-   [ ] Define the LangGraph State dictionary.
+-   [ ] Store market data, sentiment, and risk parameters.
+-   [ ] Create the Quant Agent.
+-   [ ] Create the Risk Agent.
+-   [ ] Create the Execution Agent.
+-   [ ] Build the preliminary XGBoost pipeline using historical NSE data
+    and dummy sentiment.
+-   [ ] Generate probability scores for price movement.
+
+------------------------------------------------------------------------
 
 ## Phase 3: Execution & Monetization
-**Issue 7: [Backend] Implement GTT Order Execution via Kite API**
-*Assignee: Shreetham Anand*
-*   [ ] Build the settings UI for users to define risk parameters (max loss, target profit).
-*   [ ] Write Python execution logic to take JSON output from AI Agents and place GTT orders via Kite Connect API.
-*   [ ] Update the `Trade` database table with order confirmation status.
 
-**Issue 8: [Web/Data] PayPal Integration & SMTP Engine**
-*Assignee: Shreeyansh Vats*
-*   [ ] Integrate the PayPal REST API Smart Buttons onto the landing page.
-*   [ ] Create a Flask webhook route to capture successful subscription payments and update `User` table status.
-*   [ ] Write the Python SMTP script that queries the `News` table and emails the HTML digest to users.
+**Goal:** Execute trades, process payments, and send notifications.
 
-**Issue 9: [AI] End-to-End Orchestration & Handoff Testing**
-*Assignee: Siddharth Goutham*
-*   [ ] Connect LLM sentiment output to update the `sentiment_score` column in the database.
-*   [ ] Wire the final output of the LangGraph `Execution Agent` directly into the GTT execution function.
-*   [ ] Run a full simulated loop: News Scraped -> Sentiment Scored -> Probability Calculated -> GTT Order Generated.
+### Issue 7: \[Backend\] Implement GTT Order Execution via Kite API
+
+**Assignee:** Shreetham (Full-Stack & Market Ops)
+
+**Description:** Connect AI decisions to market order execution.
+
+**Tasks:**
+
+-   [ ] Build the settings UI for users to define risk parameters.
+-   [ ] Allow users to configure maximum loss and target profit.
+-   [ ] Implement Python execution logic to receive JSON output from AI
+    agents.
+-   [ ] Place Good Till Triggered (GTT) orders using the Kite Connect
+    API.
+-   [ ] Update the Trade database table with order confirmation status.
+
+### Issue 8: \[Web/Data\] PayPal Integration & SMTP Engine
+
+**Assignee:** Shreeyansh (Data Pipeline & Public Web)
+
+**Description:** Monetize the platform and dispatch daily intelligence.
+
+**Tasks:**
+
+-   [ ] Integrate PayPal REST API Smart Buttons into the landing page.
+-   [ ] Create a Flask webhook route for successful subscription
+    payments.
+-   [ ] Update the User table subscription status.
+-   [ ] Write the Python SMTP script to query the News table.
+-   [ ] Email HTML digests to subscribed users.
+
+### Issue 9: \[AI\] End-to-End Orchestration & Handoff Testing
+
+**Assignee:** Siddharth (AI & Quant Brain)
+
+**Description:** Connect all components for the final hackathon
+demonstration.
+
+**Tasks:**
+
+-   [ ] Connect LLM sentiment output to the `sentiment_score` database
+    column.
+-   [ ] Connect the LangGraph Execution Agent to the GTT execution
+    function.
+-   [ ] Test the complete workflow:
+
+``` text
+News Scraped
+     |
+     v
+Sentiment Scored
+     |
+     v
+Probability Calculated
+     |
+     v
+Risk Validation
+     |
+     v
+GTT Order Generated
+```
+
+------------------------------------------------------------------------
+
+## 🤝 Open Source and Community
+
+The project source is provided under the MIT License.
+
+Third-party packages, ML libraries, and optional model weights remain
+subject to their respective licenses and terms.
+
+### Built By
+
+-   **Siddharth** -- AI & Quant Brain
+-   **Shreetham** -- Full-Stack & Market Ops
+-   **Shreeyansh** -- Data Pipeline & Public Web
+
+### Repository
+
+[⭐ Explore TradePoint on
+GitHub](https://github.com/Siddharth-Goutham/TradePoint)
+
+------------------------------------------------------------------------
+
+**TradePoint -- Bridging Financial News, AI Intelligence, Quantitative
+Analysis, and Automated Trading.**
