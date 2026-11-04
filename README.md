@@ -93,10 +93,9 @@ TradePoint is designed with a decoupled architecture to ensure that market intel
 
 ## 👥 The Team
 
-Built during the PayPal Hackathon by:
 
 * **Siddharth Goutham** (AI & Quant Brain)
 * **Shreetham Anand** (Full-Stack & Market Ops)
 * **Shreeyansh Vats** (Data Pipeline & Public Web)
 
-*Prioritizing functional, robust MVPs over premature optimization.*
+
