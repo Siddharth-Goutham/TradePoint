@@ -218,3 +218,19 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- Custom Project Additions ---
+
+# Machine Learning Models
+*.pkl
+*.joblib
+*.model
+models/
+
+# Selenium / Browser Driver Logs
+geckodriver.log
+ghostdriver.log
+chromedriver.log
+
+# OS Junk
+.DS_Store
