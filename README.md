@@ -73,41 +73,15 @@ LangGraph multi-agent orchestration inspectable and reusable.
 
 ## 🚀 Features and Status
 
-  -----------------------------------------------------------------------
-  Area                                Features
-  ----------------------------------- -----------------------------------
-  Data Extraction                     Headless Selenium scraper for
-                                      extracting financial news and
-                                      storing it in a shared SQL
-                                      database.
-
-  Orchestration                       Stateful LangGraph multi-agent
-                                      workflow containing Scraper, Quant,
-                                      Risk, and Execution agents.
-
-  Sentiment Analysis                  Configurable LLM client for
-                                      classifying market news into
-                                      bullish, bearish, and neutral
-                                      sentiment scores.
-
-  Predictive ML                       Scikit-Learn and XGBoost pipeline
-                                      combining historical NSE data with
-                                      LLM sentiment scores.
-
-  Market Operations                   Flask routes handling Zerodha Kite
-                                      Connect OAuth and generating GTT
-                                      orders.
-
-  Monetization                        PayPal REST API integration using
-                                      Smart Buttons for SaaS
-                                      subscriptions.
-
-  Reports & UI                        Jinja/Bootstrap dashboard
-                                      displaying financial news,
-                                      sentiment scores, active trades,
-                                      and optional daily SMTP email
-                                      digests.
-  -----------------------------------------------------------------------
+| Area | Features |
+|---|---|
+| Data Extraction | Headless Selenium scraper for extracting financial news and storing it in a shared SQL database. |
+| Orchestration | Stateful LangGraph multi-agent workflow containing Scraper, Quant, Risk, and Execution agents. |
+| Sentiment Analysis | Configurable LLM client for classifying market news into bullish, bearish, and neutral sentiment scores. |
+| Predictive ML | Scikit-Learn and XGBoost pipeline combining historical NSE data with LLM sentiment scores. |
+| Market Operations | Flask routes handling Zerodha Kite Connect OAuth and generating GTT orders. |
+| Monetization | PayPal REST API integration using Smart Buttons for SaaS subscriptions. |
+| Reports & UI | Jinja/Bootstrap dashboard displaying financial news, sentiment scores, and active trades. |
 
 ------------------------------------------------------------------------
 
@@ -167,7 +141,6 @@ managed through PayPal webhooks.
   PayPal REST API            SaaS subscription management
   Jinja2                     Server-side templating
   Bootstrap                  Dashboard UI
-  SMTP                       Email digest delivery
 
 ------------------------------------------------------------------------
 
@@ -247,8 +220,6 @@ Configure the following variables in your `.env` file:
   `KITE_API_SECRET`    Zerodha developer application secret
   `LLM_API_KEY`        LLM provider API key
   `PAYPAL_CLIENT_ID`   PayPal REST API client ID
-  `SMTP_EMAIL`         Gmail account for email digests
-  `SMTP_PASSWORD`      Gmail app-specific password
   `FLASK_APP`          Flask application entry point
 
 > **Security:** The `.env` file is ignored by Git. Never commit API
@@ -292,9 +263,7 @@ The scraper and AI pipeline run independently of the Flask application.
 
 ## 📊 Dashboard and Deployment
 
-The dashboard is built using server-side Jinja templates.
-
-It displays:
+The **Reports & UI** item refers to the application dashboard—not a separate reports module. The dashboard is built using server-side Jinja templates and displays:
 
 -   Scraped financial news.
 -   AI-generated sentiment scores.
@@ -481,7 +450,6 @@ surfacing.
 -   [ ] Store the token securely in the user's session/database.
 -   [ ] Build the News Column UI on the dashboard.
 
-### Issue 5: \[Web\] Build Static Landing Page & Email Digest Template
 
 **Assignee:** Shreeyansh (Data Pipeline & Public Web)
 
@@ -492,7 +460,6 @@ surfacing.
 -   [ ] Build the public `index.html` landing page explaining
     TradePoint.
 -   [ ] Design pricing tiers for PayPal integration.
--   [ ] Design the HTML/CSS template for the daily SMTP email digest.
 -   [ ] Use Jinja formatting to inject dynamic data.
 
 ### Issue 6: \[AI\] Build LangGraph State Workflow & XGBoost Pipeline
@@ -534,11 +501,10 @@ surfacing.
     API.
 -   [ ] Update the Trade database table with order confirmation status.
 
-### Issue 8: \[Web/Data\] PayPal Integration & SMTP Engine
 
 **Assignee:** Shreeyansh (Data Pipeline & Public Web)
 
-**Description:** Monetize the platform and dispatch daily intelligence.
+**Description:** Monetize the platform through subscription payments.
 
 **Tasks:**
 
@@ -546,7 +512,6 @@ surfacing.
 -   [ ] Create a Flask webhook route for successful subscription
     payments.
 -   [ ] Update the User table subscription status.
--   [ ] Write the Python SMTP script to query the News table.
 -   [ ] Email HTML digests to subscribed users.
 
 ### Issue 9: \[AI\] End-to-End Orchestration & Handoff Testing
