@@ -128,16 +128,3 @@ python scraper/daily_news_scraper.py
 *   [ ] Connect LLM sentiment output to update the `sentiment_score` column in the database.
 *   [ ] Wire the final output of the LangGraph `Execution Agent` directly into the GTT execution function.
 *   [ ] Run a full simulated loop: News Scraped -> Sentiment Scored -> Probability Calculated -> GTT Order Generated.
-
-
-
-<FollowUp label="Write the Flask Application Factory" query="Let's start with Issue 1 and write the Flask application factory and SQLAlchemy models."/>
-
-<ElicitationsGroup message="Select a component to build first:">
-  <Elicitation label="Initialize Flask Boilerplate" query="Write the Flask application factory and SQLAlchemy database schema."/>
-  <Elicitation label="Build Selenium Scraper" query="Write the headless Selenium script for scraping financial news."/>
-  <Elicitation label="Set up ML Prompts" query="Draft the initial LangGraph nodes and sentiment analysis prompts."/>
-</ElicitationsGroup>
-*   [ ] Connect LLM sentiment output to update the `sentiment_score` column in the database.
-*   [ ] Wire the final output of the LangGraph `Execution Agent` directly into the GTT execution function.
-*   [ ] Run a full simulated loop: News Scraped -> Sentiment Scored -> Probability Calculated -> GTT Order Generated.
